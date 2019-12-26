@@ -1,0 +1,34 @@
+{
+	"description": "elasticsearch logger plugin",
+	"documentation": "-",
+	"entrypoint": ["/es-log-driver"],
+	"interface": {
+		"types": ["docker.logdriver/1.0"],
+		"socket": "elasticlogger.sock"
+	},
+	"network": {
+		"type": "host"
+	},
+	"env": [
+		{
+			"name": "LOG_LEVEL",
+			"description": "Set log level to output for plugin logs",
+			"value": "info",
+			"settable": ["value"]
+		},
+		{
+			"name": "GCTIMER",
+			"description": "Sets garbage collector timer for unsent log buffer.",
+			"value": "1m",
+			"settable": ["value"]
+		},
+		{
+			"name": "HOST",
+			"description": "Sets default elasticsearch host",
+			"value": "",
+			"settable": ["value"]
+		}
+	]
+}
+
+

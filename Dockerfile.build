@@ -1,0 +1,10 @@
+#FROM debian:stretch-slim
+FROM alpine:latest
+
+COPY ./es-log-driver /
+
+WORKDIR /
+
+CMD ./es-log-driver
+
+
