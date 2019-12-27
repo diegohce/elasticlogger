@@ -1,3 +1,4 @@
 rootfs
 es-log-driver
 plugin-build/
+*.swp

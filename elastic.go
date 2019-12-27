@@ -15,14 +15,15 @@ import (
 )
 
 type elasticBulkWriter struct {
-	esHost   string
-	esIndex  string
-	esType   string
-	bulkSize int
-	buffer   []string
-	logInfo  logger.Info
-	mu       *sync.Mutex
-	ticker   *time.Ticker
+	esHost     string
+	esIndex    string
+	esType     string
+	bulkSize   int
+	buffer     []string
+	logInfo    logger.Info
+	mu         *sync.Mutex
+	ticker     *time.Ticker
+	tickerDone chan bool
 }
 
 func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
@@ -61,13 +62,14 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 		return nil, err
 	}
 	es := &elasticBulkWriter{
-		esHost:   esHost,
-		esIndex:  logInfo.Config["index"],
-		esType:   esType,
-		bulkSize: bulkSize,
-		logInfo:  logInfo,
-		mu:       &sync.Mutex{},
-		ticker:   time.NewTicker(tickDuration),
+		esHost:     esHost,
+		esIndex:    logInfo.Config["index"],
+		esType:     esType,
+		bulkSize:   bulkSize,
+		logInfo:    logInfo,
+		mu:         &sync.Mutex{},
+		ticker:     time.NewTicker(tickDuration),
+		tickerDone: make(chan bool),
 	}
 	go es.gc()
 	return es, nil
@@ -133,20 +135,36 @@ func (es *elasticBulkWriter) send(buffer []string) {
 
 func (es *elasticBulkWriter) gc() {
 
-	for _ = range es.ticker.C {
-		es.mu.Lock()
-		if len(es.buffer) > 0 {
-			fullBuffer := es.buffer
-			es.buffer = nil
+	logrus.WithField("id", es.logInfo.ContainerID).
+		Debug("GC: goroutine possible leak")
 
+	for {
+
+		select {
+		case _ = <-es.ticker.C:
+			es.mu.Lock()
+			if len(es.buffer) > 0 {
+				fullBuffer := es.buffer
+				es.buffer = nil
+
+				logrus.WithField("id", es.logInfo.ContainerID).
+					WithField("container", es.logInfo.ContainerName).
+					WithField("elasticHost", es.esHost).
+					WithField("bulksize", len(fullBuffer)).
+					Info("GC: Sending bulk to elastic")
+
+				go es.send(fullBuffer)
+			}
+			es.mu.Unlock()
+		case _ = <-es.tickerDone:
 			logrus.WithField("id", es.logInfo.ContainerID).
-				WithField("container", es.logInfo.ContainerName).
-				WithField("elasticHost", es.esHost).
-				WithField("bulksize", len(fullBuffer)).
-				Info("GC: Sending bulk to elastic")
-
-			go es.send(fullBuffer)
+				Debug("GC: goroutine not a leak")
+			return
 		}
-		es.mu.Unlock()
 	}
+}
+
+func (es *elasticBulkWriter) Stop() {
+	es.ticker.Stop()
+	es.tickerDone <- true
 }
