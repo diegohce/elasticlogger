@@ -26,16 +26,18 @@ type elasticBulkWriter struct {
 }
 
 func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
+	var esHost string
 
-	esHost := os.Getenv("HOST")
-	if esHost == "" {
-		if _, ok := logInfo.Config["host"]; !ok {
-			logrus.WithField("id", logInfo.ContainerID).Error("ELASTICLOGGER_HOST is not defined so --log-opt host is mandatory")
-			return nil, fmt.Errorf("ELASTICLOGGER_HOST is not defined so --log-opt host is mandatory")
-		} else {
-			esHost = logInfo.Config["host"]
+	if h, ok := logInfo.Config["host"]; !ok {
+		esHost = os.Getenv("HOST")
+		if esHost == "" {
+			logrus.WithField("id", logInfo.ContainerID).Error("HOST is not defined so --log-opt host is mandatory")
+			return nil, fmt.Errorf("HOST is not defined so --log-opt host is mandatory")
 		}
+	} else {
+		esHost = h
 	}
+
 	esGCTimer := os.Getenv("GCTIMER")
 	if esGCTimer == "" {
 		esGCTimer = "1m"
