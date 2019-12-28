@@ -1,3 +1,8 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/diegohce/elasticlogger)](https://goreportcard.com/report/github.com/diegohce/elasticlogger)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/diegohce/elasticlogger/blob/master/LICENSE)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/diegohce/elasticlogger/graphs/commit-activity)
+[![HitCount](http://hits.dwyl.io/diegohce/elasticlogger.svg)](http://hits.dwyl.io/diegohce/elasticlogger)
+
 # elasticlogger
 
 # Build & install
