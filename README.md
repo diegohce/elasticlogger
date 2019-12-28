@@ -19,11 +19,38 @@ make
 docker plugin set elasticlogger:latest HOST=<elastic_host:port>
 docker plugin enable elasticlogger:latest
 ```
-## Optional
+## Mandatory plugin settings
 
-- `GCTIMER` sets the garbage collector interval. Default: 1m (one minute).
-- `LOG_LEVEL` sets the loglevel for the driver's own log entries. Default: info
+<table>
+<tr>
+    <th>Option</th>
+    <th>Description</th>
+</tr>
+<tr>
+    <td>HOST</td>
+    <td>Elasticsearch server host:port</td>
+</tr>
+</table>
 
+## Optional plugin settings
+
+<table>
+<tr>
+    <th>Option</th>
+    <th>Description</th>
+   <th>Default</th>
+</tr>
+<tr>
+    <td>GCTIMER</td>
+    <td>sets the garbage collector interval</td>
+    <td>1m</td>
+</tr>
+<tr>
+    <td>LOG_LEVEL</td>
+    <td>sets the loglevel for the driver's own log entries</td>
+    <td>info</td>
+</tr>
+</table>
 
 # Usage
 
@@ -31,8 +58,29 @@ docker plugin enable elasticlogger:latest
 docker run --log-driver elasticlogger --log-opt index=myappindex ...
 ```
 
-Other log options:
-- host : will override driver host.
-- bulksize: sets how many lines of log to send at a time. Default 10.
+## Container level settings
+
+<table>
+<tr>
+    <th>Option</th>
+    <th>Description</th>
+    <th>Default</th>
+</tr>
+<tr>
+    <td>index</td>
+    <td>Elasticsearch index where logs will be stored</td>
+    <td>No default. Mandatory setting.</td>
+</tr>
+<tr>
+    <td>host</td>
+    <td>will override driver host</td>
+    <td>plugin's HOST value</td>
+</tr>
+<tr>
+    <td>bulksize</td>
+    <td>sets how many lines of log to send at a time</td>
+    <td>10</td>
+</tr>
+</table>
 
 
