@@ -5,12 +5,36 @@
 
 # elasticlogger
 
-# Build & install
+# Build & install from source
 
 ```bash
 git clone https://github.com/diegohce/elasticlogger.git ~/go/src/elasticlogger
 cd ~/go/src/elasticlogger
 make
+```
+## Pushing to registry
+
+```bash
+cd ~/go/src/elasticlogger
+docker plugin create <registry>/elasticlogger:<tag> ,/plugin-dir
+docker plugin push <registry>/elasticlogger:<tag>
+```
+## Installing from regisrtry
+Make sure there's no previous elasticlogger installation from build process.
+```bash
+docker plugin ls
+```
+If there's any, remove them first.
+```bash
+docker plugin rm <plugin>:<tag>
+```
+Now, we can install `elasticlogger` from registry.
+```bash
+docker plugin install --alias elasticlogger <registry>/elasticlogger:<tag>
+```
+Optionally, you can set the `HOST` value at the same time.
+```bash
+docker plugin install --alias elasticlogger <registry>/elasticlogger:<tag> HOST=<elastichost:port>
 ```
 
 # Configuration
