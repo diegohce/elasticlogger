@@ -16,7 +16,7 @@ make
 
 ```bash
 cd ~/go/src/elasticlogger
-docker plugin create <registry>/elasticlogger:<tag> ,/plugin-dir
+docker plugin create <registry>/elasticlogger:<tag> ./plugin-dir
 docker plugin push <registry>/elasticlogger:<tag>
 ```
 ## Installing from regisrtry
