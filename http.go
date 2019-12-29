@@ -9,11 +9,13 @@ import (
 	"github.com/docker/go-plugins-helpers/sdk"
 )
 
+// StartLoggingRequest from dockerd
 type StartLoggingRequest struct {
 	File string
 	Info logger.Info
 }
 
+// StopLoggingRequest from dockerd
 type StopLoggingRequest struct {
 	File string
 }
