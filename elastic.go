@@ -140,9 +140,10 @@ func (es *elasticBulkWriter) send(buffer []string) {
 		return
 	}
 	defer r.Body.Close()
-	rBody, _ := ioutil.ReadAll(r.Body)
 
 	if r.StatusCode != 200 {
+		rBody, _ := ioutil.ReadAll(r.Body)
+
 		logrus.WithField("id", es.logInfo.ContainerID).
 			WithField("container", es.logInfo.ContainerName).
 			WithField("elastichost", es.esHost).
