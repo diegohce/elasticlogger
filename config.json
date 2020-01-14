@@ -27,6 +27,24 @@
 			"description": "Sets default elasticsearch host",
 			"value": "",
 			"settable": ["value"]
+		},
+		{
+			"name": "USER",
+			"description": "User for basic auth",
+			"value": "",
+			"settable": ["value"]
+		},
+		{
+			"name": "PASSWORD",
+			"description": "Password for basic auth",
+			"value": "",
+			"settable": ["value"]
+		},
+		{
+			"name": "bulksize",
+			"description": "Sets how many lines of log to send at a time",
+			"value": "10",
+			"settable": ["value"]
 		}
 	]
 }

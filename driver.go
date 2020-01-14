@@ -104,7 +104,7 @@ func consumeLog(lf *logPair) {
 
 		//fmt.Println("buf.Line", string(buf.Line))
 
-		if buf.Line[0] == '{' {
+		if len(buf.Line) > 0 && buf.Line[0] == '{' {
 			lf.es.write(string(buf.Line))
 		}
 

@@ -55,6 +55,8 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 	bulkSize := 10
 	if bs, ok := logInfo.Config["bulksize"]; ok {
 		bulkSize, _ = strconv.Atoi(bs)
+	} else if bs := os.Getenv("bulksize"); bs != "" {
+		bulkSize, _ = strconv.Atoi(bs)
 	}
 
 	tickDuration, err := time.ParseDuration(esGCTimer)
@@ -111,9 +113,25 @@ func (es *elasticBulkWriter) send(buffer []string) {
 	}
 	body := payload.String()
 
-	url := fmt.Sprintf("http://%s/_bulk", es.esHost)
+	url := fmt.Sprintf("%s/_bulk", es.esHost)
 
-	r, err := http.Post(url, "application/x-ndjson", strings.NewReader(body))
+	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+	if err != nil {
+		logrus.WithField("id", es.logInfo.ContainerID).
+			WithField("container", es.logInfo.ContainerName).
+			WithField("elastichost", es.esHost).
+			Error(err.Error())
+		return
+	}
+	req.Header.Set("Content-Type", "application/x-ndjson")
+	if u := es.config("USER"); u != "" {
+		if p := es.config("PASSWORD"); p != "" {
+			req.SetBasicAuth(u, p)
+		}
+	}
+
+	r, err := http.DefaultClient.Do(req)
+	//r, err := http.Post(url, "application/x-ndjson", strings.NewReader(body))
 	if err != nil {
 		logrus.WithField("id", es.logInfo.ContainerID).
 			WithField("container", es.logInfo.ContainerName).
@@ -167,4 +185,12 @@ func (es *elasticBulkWriter) gc() {
 func (es *elasticBulkWriter) Stop() {
 	es.ticker.Stop()
 	es.tickerDone <- true
+}
+
+func (es *elasticBulkWriter) config(key string) string {
+	u := os.Getenv(key)
+	if v, ok := es.logInfo.Config[key]; ok {
+		u = v
+	}
+	return u
 }
