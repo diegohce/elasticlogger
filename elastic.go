@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -38,6 +39,17 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 	} else {
 		esHost = h
 	}
+
+	u, err := url.Parse(esHost)
+	if err != nil {
+		logrus.WithField("id", logInfo.ContainerID).Error(err.Error())
+		return nil, fmt.Errorf("%w. Missing scheme?", err)
+	}
+	if u.Scheme == "" {
+		logrus.WithField("id", logInfo.ContainerID).Error("Invalid host. Missing scheme")
+		return nil, fmt.Errorf("Invalid host. Missing scheme")
+	}
+	esHost = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 
 	esGCTimer := os.Getenv("GCTIMER")
 	if esGCTimer == "" {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -20,9 +19,8 @@ func TestElasticBulkWriter(t *testing.T) {
 
 	var logInfo logger.Info
 	logInfo.Config = make(map[string]string)
-	tsURL, _ := url.Parse(ts.URL)
 
-	logInfo.Config["host"] = tsURL.Host
+	logInfo.Config["host"] = ts.URL
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 
@@ -46,9 +44,8 @@ func TestElasticBulkWriter400(t *testing.T) {
 
 	var logInfo logger.Info
 	logInfo.Config = make(map[string]string)
-	tsURL, _ := url.Parse(ts.URL)
 
-	logInfo.Config["host"] = tsURL.Host
+	logInfo.Config["host"] = ts.URL
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 
@@ -73,9 +70,8 @@ func TestElasticBulkWriterGC(t *testing.T) {
 
 	var logInfo logger.Info
 	logInfo.Config = make(map[string]string)
-	tsURL, _ := url.Parse(ts.URL)
 
-	logInfo.Config["host"] = tsURL.Host
+	logInfo.Config["host"] = ts.URL
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 
@@ -108,7 +104,7 @@ func TestElasticBulkWriterNoIndex(t *testing.T) {
 	var logInfo logger.Info
 	logInfo.Config = make(map[string]string)
 
-	logInfo.Config["host"] = "somehost:9999"
+	logInfo.Config["host"] = "http://somehost:9999"
 	logInfo.Config["bulksize"] = "3"
 
 	es, err := newElasticBulkWriter(logInfo)
@@ -123,7 +119,7 @@ func TestElasticBulkWriterWithCustomType(t *testing.T) {
 	var logInfo logger.Info
 	logInfo.Config = make(map[string]string)
 
-	logInfo.Config["host"] = "somehost:9999"
+	logInfo.Config["host"] = "http://somehost:9999"
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 	logInfo.Config["type"] = "test_type"
@@ -143,7 +139,7 @@ func TestElasticBulkWriterBadGCDuration(t *testing.T) {
 
 	os.Setenv("GCTIMER", "bad duration string")
 
-	logInfo.Config["host"] = "somehost:9999"
+	logInfo.Config["host"] = "http://somehost:9999"
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 	logInfo.Config["type"] = "test_type"
@@ -162,7 +158,7 @@ func TestElasticBulkWriterBadHost(t *testing.T) {
 
 	os.Setenv("GCTIMER", "15m")
 
-	logInfo.Config["host"] = "localhost:9999"
+	logInfo.Config["host"] = "http://localhost:9999"
 	logInfo.Config["bulksize"] = "3"
 	logInfo.Config["index"] = "testindex"
 
