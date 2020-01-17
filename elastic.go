@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -39,6 +40,17 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 		esHost = h
 	}
 
+	u, err := url.Parse(esHost)
+	if err != nil {
+		logrus.WithField("id", logInfo.ContainerID).Error(err.Error())
+		return nil, fmt.Errorf("%w. Missing scheme?", err)
+	}
+	if u.Scheme == "" {
+		logrus.WithField("id", logInfo.ContainerID).Error("Invalid host. Missing scheme")
+		return nil, fmt.Errorf("Invalid host. Missing scheme")
+	}
+	esHost = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+
 	esGCTimer := os.Getenv("GCTIMER")
 	if esGCTimer == "" {
 		esGCTimer = "1m"
@@ -54,6 +66,8 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 	}
 	bulkSize := 10
 	if bs, ok := logInfo.Config["bulksize"]; ok {
+		bulkSize, _ = strconv.Atoi(bs)
+	} else if bs := os.Getenv("bulksize"); bs != "" {
 		bulkSize, _ = strconv.Atoi(bs)
 	}
 
@@ -111,9 +125,25 @@ func (es *elasticBulkWriter) send(buffer []string) {
 	}
 	body := payload.String()
 
-	url := fmt.Sprintf("http://%s/_bulk", es.esHost)
+	url := fmt.Sprintf("%s/_bulk", es.esHost)
 
-	r, err := http.Post(url, "application/x-ndjson", strings.NewReader(body))
+	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+	if err != nil {
+		logrus.WithField("id", es.logInfo.ContainerID).
+			WithField("container", es.logInfo.ContainerName).
+			WithField("elastichost", es.esHost).
+			Error(err.Error())
+		return
+	}
+	req.Header.Set("Content-Type", "application/x-ndjson")
+	if u := es.config("USER"); u != "" {
+		if p := es.config("PASSWORD"); p != "" {
+			req.SetBasicAuth(u, p)
+		}
+	}
+
+	r, err := http.DefaultClient.Do(req)
+	//r, err := http.Post(url, "application/x-ndjson", strings.NewReader(body))
 	if err != nil {
 		logrus.WithField("id", es.logInfo.ContainerID).
 			WithField("container", es.logInfo.ContainerName).
@@ -122,9 +152,10 @@ func (es *elasticBulkWriter) send(buffer []string) {
 		return
 	}
 	defer r.Body.Close()
-	rBody, _ := ioutil.ReadAll(r.Body)
 
 	if r.StatusCode != 200 {
+		rBody, _ := ioutil.ReadAll(r.Body)
+
 		logrus.WithField("id", es.logInfo.ContainerID).
 			WithField("container", es.logInfo.ContainerName).
 			WithField("elastichost", es.esHost).
@@ -167,4 +198,12 @@ func (es *elasticBulkWriter) gc() {
 func (es *elasticBulkWriter) Stop() {
 	es.ticker.Stop()
 	es.tickerDone <- true
+}
+
+func (es *elasticBulkWriter) config(key string) string {
+	u := os.Getenv(key)
+	if v, ok := es.logInfo.Config[key]; ok {
+		u = v
+	}
+	return u
 }

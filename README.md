@@ -42,7 +42,7 @@ docker plugin install --alias elasticlogger <registry>/elasticlogger:<tag> HOST=
 # Configuration
 
 ```bash
-docker plugin set elasticlogger:latest HOST=<elastic_host:port>
+docker plugin set elasticlogger:latest HOST=http[s]://<elastic_host:port>
 docker plugin enable elasticlogger:latest
 ```
 ## Mandatory plugin settings
@@ -54,7 +54,7 @@ docker plugin enable elasticlogger:latest
 </tr>
 <tr>
     <td>HOST</td>
-    <td>Elasticsearch server host:port</td>
+    <td>Elasticsearch server http[s]://host:port</td>
 </tr>
 </table>
 
@@ -75,6 +75,21 @@ docker plugin enable elasticlogger:latest
     <td>LOG_LEVEL</td>
     <td>sets the loglevel for the driver's own log entries</td>
     <td>info</td>
+</tr>
+<tr>
+    <td>USER</td>
+    <td>User for basic auth</td>
+    <td>&nbsp;</td>
+</tr>
+<tr>
+    <td>PASSWORD</td>
+    <td>PASSWORD for basic auth</td>
+    <td>&nbsp;</td>
+</tr>
+<tr>
+    <td>bulksize</td>
+    <td>sets how many lines of log to send at a time</td>
+    <td>10</td>
 </tr>
 </table>
 
@@ -106,6 +121,16 @@ docker run --log-driver elasticlogger --log-opt index=myappindex ...
     <td>bulksize</td>
     <td>sets how many lines of log to send at a time</td>
     <td>10</td>
+</tr>
+<tr>
+    <td>USER</td>
+    <td>User for basic auth</td>
+    <td>&nbsp;</td>
+</tr>
+<tr>
+    <td>PASSWORD</td>
+    <td>PASSWORD for basic auth</td>
+    <td>&nbsp;</td>
 </tr>
 </table>
 
