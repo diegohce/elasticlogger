@@ -87,6 +87,11 @@ docker plugin enable elasticlogger:latest
     <td>&nbsp;</td>
 </tr>
 <tr>
+    <td>DATESUFFIX</td>
+    <td>Date suffix pattern to append to index name. See Go <a href="https://golang.org/pkg/time" target="_blank">time</a> package</td>
+    <td>200601</td>
+</tr>
+<tr>
     <td>bulksize</td>
     <td>sets how many lines of log to send at a time</td>
     <td>10</td>
