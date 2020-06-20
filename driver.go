@@ -52,7 +52,7 @@ func (d *driver) StartLogging(file string, logCtx logger.Info) error {
 	logrus.WithField("id", logCtx.ContainerID).
 		WithField("container", logCtx.ContainerName).
 		WithField("elasticHost", es.esHost).
-		WithField("index", es.esIndex).
+		WithField("index", es.esIndex).WithField("suffix", es.esDateSuffix).
 		WithField("type", es.esType).Info("Start logging")
 
 	// DHC - f is the log stream from docker to our plugin

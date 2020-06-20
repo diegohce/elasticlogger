@@ -16,15 +16,16 @@ import (
 )
 
 type elasticBulkWriter struct {
-	esHost     string
-	esIndex    string
-	esType     string
-	bulkSize   int
-	buffer     []string
-	logInfo    logger.Info
-	mu         *sync.Mutex
-	ticker     *time.Ticker
-	tickerDone chan bool
+	esHost       string
+	esIndex      string
+	esType       string
+	esDateSuffix string
+	bulkSize     int
+	buffer       []string
+	logInfo      logger.Info
+	mu           *sync.Mutex
+	ticker       *time.Ticker
+	tickerDone   chan bool
 }
 
 func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
@@ -76,14 +77,15 @@ func newElasticBulkWriter(logInfo logger.Info) (*elasticBulkWriter, error) {
 		return nil, err
 	}
 	es := &elasticBulkWriter{
-		esHost:     esHost,
-		esIndex:    logInfo.Config["index"],
-		esType:     esType,
-		bulkSize:   bulkSize,
-		logInfo:    logInfo,
-		mu:         &sync.Mutex{},
-		ticker:     time.NewTicker(tickDuration),
-		tickerDone: make(chan bool),
+		esHost:       esHost,
+		esIndex:      logInfo.Config["index"],
+		esType:       esType,
+		bulkSize:     bulkSize,
+		esDateSuffix: os.Getenv("DATESUFFIX"),
+		logInfo:      logInfo,
+		mu:           &sync.Mutex{},
+		ticker:       time.NewTicker(tickDuration),
+		tickerDone:   make(chan bool),
 	}
 	go es.gc()
 	return es, nil
@@ -117,8 +119,12 @@ func (es *elasticBulkWriter) send(buffer []string) {
 
 	payload := strings.Builder{}
 
+	indexDate := time.Now().Format(es.esDateSuffix)
+	indexName := fmt.Sprintf("%s_%s", es.esIndex, indexDate)
+
 	for _, l := range buffer {
-		payload.WriteString(fmt.Sprintf(`{"index": {"_index":"%s", "_type":"%s"} }`, es.esIndex, es.esType))
+		//payload.WriteString(fmt.Sprintf(`{"index": {"_index":"%s", "_type":"%s"} }`, es.esIndex, es.esType))
+		payload.WriteString(fmt.Sprintf(`{"index": {"_index":"%s", "_type":"%s"} }`, indexName, es.esType))
 		payload.WriteString("\n")
 		payload.WriteString(l)
 		payload.WriteString("\n")

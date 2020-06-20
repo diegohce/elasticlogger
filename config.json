@@ -45,6 +45,12 @@
 			"description": "Sets how many lines of log to send at a time",
 			"value": "10",
 			"settable": ["value"]
+		},
+		{
+			"name": "DATESUFFIX",
+			"description": "Date suffix (go time package) format for index name",
+			"value": "200601",
+			"settable": ["value"]
 		}
 	]
 }
